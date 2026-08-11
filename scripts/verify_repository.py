@@ -15,8 +15,14 @@ required = {
     ".zpkg.toml",
     "docs/test-strategy.md",
     "scripts/verify_repository.py",
+    "scripts/audit_github_org.py",
+    "policy/quaestor-ledger.json",
     ".github/workflows/deep-tests.yml",
     "src/deep_tests/__init__.py",
+    "src/deep_tests/security_model.py",
+    "src/deep_tests/workflow_policy.py",
+    "tests/test_security_boundaries.py",
+    "tests/test_workflow_policy.py",
 }
 missing = sorted(path for path in required if not (ROOT / path).exists())
 if missing:
@@ -46,10 +52,21 @@ for phrase in ("merge base", "3–10 relevant commits", "ours", "theirs", "Fail 
 workflow = (ROOT / ".github/workflows/deep-tests.yml").read_text(encoding="utf-8")
 if "permissions:\n  contents: read" not in workflow or "pull_request_target" in workflow:
     raise SystemExit("workflow permission boundary is unsafe")
-action_pattern = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}$")
+action_pattern = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_./-]+)?@[0-9a-f]{40}$")
 actions = [line.split("uses:", 1)[1].strip() for line in workflow.splitlines() if "uses:" in line]
-if len(actions) < 2 or any(not action_pattern.fullmatch(action) for action in actions):
+if len(actions) < 4 or any(not action_pattern.fullmatch(action) for action in actions):
     raise SystemExit(f"workflow actions are not immutably pinned: {actions}")
+if workflow.count("persist-credentials: false") != 2:
+    raise SystemExit("every checkout step must disable persisted credentials")
+if "github.event_name != 'pull_request'" not in workflow:
+    raise SystemExit("private audit job must explicitly exclude pull_request")
+
+policy = json.loads((ROOT / "policy/quaestor-ledger.json").read_text(encoding="utf-8"))
+repositories = policy.get("repositories", [])
+if policy.get("organization") != "quaestor-ledger" or len(repositories) != 13:
+    raise SystemExit("canonical production repository inventory drift")
+if len({item.get("name") for item in repositories}) != len(repositories):
+    raise SystemExit("canonical repository names must be unique")
 
 if metadata.get("bootstrap_operation") != "deep-test-fleet-20260808":
     raise SystemExit("bootstrap operation identity drift")
