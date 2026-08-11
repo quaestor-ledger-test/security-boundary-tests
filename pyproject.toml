@@ -1,7 +1,7 @@
 [project]
 name = "quaestor-ledger-test-security-boundary-tests"
-version = "0.1.0"
-description = "Tenant isolation, replay protection, signature verification, path traversal, SSRF, redaction, and CI supply-chain boundary tests."
+version = "0.2.0"
+description = "Tenant, replay, input, redaction, and GitHub Actions trust-boundary tests for Quaestor Ledger."
 requires-python = ">=3.11"
 dependencies = []
 
