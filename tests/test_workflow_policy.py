@@ -140,6 +140,54 @@ jobs:
             {"trigger.pull-request-target", "credential.literal"}.issubset(codes(workflow))
         )
 
+    def test_inline_checkout_persistence_setting_is_accepted(self) -> None:
+        workflow = f"""name: inline
+on:
+  pull_request:
+permissions: {{contents: read}}
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: {PINNED_CHECKOUT}
+        with: {{persist-credentials: false}}
+      - run: true
+"""
+        self.assertNotIn("checkout.persisted-credentials", codes(workflow))
+
+    def test_guarded_reusable_workflow_secret_is_accepted(self) -> None:
+        workflow = """name: reusable
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live:
+    if: github.event_name != 'pull_request'
+    uses: vendor/repo/.github/workflows/live.yml@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    secrets:
+      TOKEN: ${{ secrets.READ_TOKEN }}
+"""
+        self.assertNotIn("secret.broad-scope", codes(workflow))
+        self.assertNotIn("secret.untrusted-pr", codes(workflow))
+
+    def test_quoted_on_header_still_detects_pull_request_target(self) -> None:
+        workflow = """name: quoted
+'on':
+  pull_request_target:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - run: true
+"""
+        self.assertIn("trigger.pull-request-target", codes(workflow))
+
     def test_inventory_is_exact_and_visibility_aware(self) -> None:
         policy = {
             "organization": "quaestor-ledger",
