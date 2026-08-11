@@ -18,6 +18,7 @@ _CREDENTIAL = re.compile(
     r"gh[pousr]_[A-Za-z0-9]{20,}|lin_api_[A-Za-z0-9]{20,}|BEGIN [A-Z ]*PRIVATE KEY"
 )
 _JOB_HEADER = re.compile(r"^  ([A-Za-z0-9_.-]+):\s*(?:#.*)?$")
+_ON_HEADER = re.compile(r"^(?:on|'on'|\"on\"):\s*(?:#.*)?$")
 _USES = re.compile(r"^\s*(?:-\s*)?uses:\s*(\S+)(?:\s+#.*)?$")
 _SECRET = re.compile(r"\$\{\{\s*secrets\.[A-Za-z0-9_]+\s*\}\}")
 
@@ -75,6 +76,9 @@ class JobBlock:
 
     def has_timeout(self) -> bool:
         return any(line.startswith("    timeout-minutes:") for line in self.lines[1:])
+
+    def is_reusable_workflow(self) -> bool:
+        return any(line.startswith("    uses:") for line in self.lines[1:])
 
 
 class GitHubApiError(RuntimeError):
@@ -169,7 +173,7 @@ def _strip_comment(value: str) -> str:
 
 def _has_trigger(lines: Sequence[str], trigger: str) -> bool:
     try:
-        on_index = next(index for index, line in enumerate(lines) if line.strip() == "on:")
+        on_index = next(index for index, line in enumerate(lines) if _ON_HEADER.match(line))
     except StopIteration:
         return False
     for line in lines[on_index + 1 :]:
@@ -305,7 +309,7 @@ def audit_workflow(
                 )
             if action.lower().startswith("actions/checkout@"):
                 block = _step_block(lines, index, job)
-                if not any(re.match(r"^\s+persist-credentials:\s*false\s*(?:#.*)?$", item) for item in block):
+                if not any(re.search(r"\bpersist-credentials:\s*false\b", item) for item in block):
                     add(
                         "error",
                         "checkout.persisted-credentials",
@@ -317,11 +321,17 @@ def audit_workflow(
         if not _SECRET.search(line):
             continue
         job = _job_for_line(jobs, index)
-        if _indent(line) <= 6:
+        reusable_secret = bool(
+            job
+            and job.is_reusable_workflow()
+            and job.excludes_pull_requests()
+            and any(item.startswith("    secrets:") for item in job.lines)
+        )
+        if _indent(line) <= 6 and not reusable_secret:
             add(
                 "error",
                 "secret.broad-scope",
-                "secret references must be scoped to one step, not workflow/job environment",
+                "secret references must be scoped to one step, except guarded reusable-workflow secrets",
                 index=index,
                 job=job,
             )
