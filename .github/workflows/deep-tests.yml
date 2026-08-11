@@ -45,6 +45,14 @@ jobs:
           --visibility public
           --strict-inventory
           --json-output artifacts/quaestor-public-audit.json
+      - name: Upload the public organization audit
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: quaestor-public-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/quaestor-public-audit.json
+          if-no-files-found: error
+          retention-days: 14
 
   private-production-audit:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -83,3 +91,11 @@ jobs:
           --visibility all
           --strict-inventory
           --json-output artifacts/quaestor-private-audit.json
+      - name: Upload the private organization audit
+        if: always() && steps.audit-token.outputs.configured == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: quaestor-private-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/quaestor-private-audit.json
+          if-no-files-found: warn
+          retention-days: 14
