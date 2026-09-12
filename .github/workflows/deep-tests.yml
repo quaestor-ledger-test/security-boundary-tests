@@ -36,3 +36,66 @@ jobs:
           PYTHONPATH: src
           DEEP_TEST_SEEDS: '0-49'
         run: python -m unittest discover -s tests -v
+      - name: Audit the public production repository slice
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          python scripts/audit_github_org.py
+          --policy policy/quaestor-ledger.json
+          --visibility public
+          --strict-inventory
+          --json-output artifacts/quaestor-public-audit.json
+      - name: Upload the public organization audit
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: quaestor-public-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/quaestor-public-audit.json
+          if-no-files-found: error
+          retention-days: 14
+
+  private-production-audit:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+          cache: ''
+      - name: Detect read-only organization audit credential
+        id: audit-token
+        shell: bash
+        env:
+          ORG_AUDIT_TOKEN: ${{ secrets.QUAESTOR_ORG_AUDIT_TOKEN }}
+        run: |
+          if [[ -n "$ORG_AUDIT_TOKEN" ]]; then
+            echo 'configured=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'configured=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Explain skipped private audit
+        if: steps.audit-token.outputs.configured != 'true'
+        run: >-
+          echo 'QUAESTOR_ORG_AUDIT_TOKEN is not configured; public inventory and deterministic policy tests remain blocking.'
+      - name: Audit all production repositories
+        if: steps.audit-token.outputs.configured == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.QUAESTOR_ORG_AUDIT_TOKEN }}
+        run: >-
+          python scripts/audit_github_org.py
+          --policy policy/quaestor-ledger.json
+          --visibility all
+          --strict-inventory
+          --json-output artifacts/quaestor-private-audit.json
+      - name: Upload the private organization audit
+        if: always() && steps.audit-token.outputs.configured == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: quaestor-private-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/quaestor-private-audit.json
+          if-no-files-found: warn
+          retention-days: 14

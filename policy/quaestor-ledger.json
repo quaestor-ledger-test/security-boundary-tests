@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "organization": "quaestor-ledger",
+  "baseline_required_paths": [
+    "README.md"
+  ],
+  "repositories": [
+    {
+      "name": ".github",
+      "visibility": "public",
+      "required_paths": [
+        "SECURITY.md",
+        "organization-policy.json",
+        "repository-relationships.json",
+        ".github/workflows/baseline-policy.yml"
+      ]
+    },
+    {
+      "name": "quaestor-clients",
+      "visibility": "private",
+      "required_paths": [
+        ".zpkg.toml"
+      ]
+    },
+    {
+      "name": "quaestor-executor",
+      "visibility": "private",
+      "required_paths": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ]
+    },
+    {
+      "name": "quaestor-flutter",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-infra",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-interfaces",
+      "visibility": "private",
+      "required_paths": [
+        ".zpkg.toml"
+      ]
+    },
+    {
+      "name": "quaestor-ledger-e2e",
+      "visibility": "public"
+    },
+    {
+      "name": "quaestor-ledger-mcp-server.rs",
+      "visibility": "private",
+      "required_paths": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ]
+    },
+    {
+      "name": "quaestor-ledger-server.rs",
+      "visibility": "private",
+      "required_paths": [
+        "Cargo.lock",
+        "Cargo.toml",
+        ".github/workflows/compile.yml"
+      ]
+    },
+    {
+      "name": "quaestor-ledger-sync",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-ledger.github.io",
+      "visibility": "public"
+    },
+    {
+      "name": "quaestor-monorepo",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-web-server.rs",
+      "visibility": "private",
+      "required_paths": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ]
+    }
+  ]
+}
