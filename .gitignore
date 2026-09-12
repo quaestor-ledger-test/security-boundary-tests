@@ -11,3 +11,7 @@ htmlcov/
 tmp/temp/
 tmp/worktrees/
 # <<< ores fleet hygiene <<<
+
+# Sanctioned scratch locations - AGENTS.md requires both, trailing-slash form
+tmp/
+temp/
