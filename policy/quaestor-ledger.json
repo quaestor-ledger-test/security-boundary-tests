@@ -16,11 +16,43 @@
       ]
     },
     {
+      "name": "quaestor-admin-api-server.rs",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-admin-web-server.rs",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-api-server.rs",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-assets",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-cli",
+      "visibility": "private"
+    },
+    {
       "name": "quaestor-clients",
       "visibility": "private",
       "required_paths": [
         ".zpkg.toml"
       ]
+    },
+    {
+      "name": "quaestor-desktop-app.rs",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-docs",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-e2e",
+      "visibility": "public"
     },
     {
       "name": "quaestor-executor",
@@ -46,16 +78,12 @@
       ]
     },
     {
-      "name": "quaestor-ledger-e2e",
-      "visibility": "public"
+      "name": "quaestor-lambdas",
+      "visibility": "private"
     },
     {
-      "name": "quaestor-ledger-mcp-server.rs",
-      "visibility": "private",
-      "required_paths": [
-        "Cargo.lock",
-        "Cargo.toml"
-      ]
+      "name": "quaestor-ledger-e2e",
+      "visibility": "public"
     },
     {
       "name": "quaestor-ledger-server.rs",
@@ -75,7 +103,35 @@
       "visibility": "public"
     },
     {
+      "name": "quaestor-lib-core",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-mcp-server.rs",
+      "visibility": "private",
+      "required_paths": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ]
+    },
+    {
       "name": "quaestor-monorepo",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-orm-core",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-pub-lib-core",
+      "visibility": "public"
+    },
+    {
+      "name": "quaestor-sidecar.rs",
+      "visibility": "private"
+    },
+    {
+      "name": "quaestor-sync",
       "visibility": "private"
     },
     {

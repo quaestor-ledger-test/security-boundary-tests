@@ -63,7 +63,7 @@ if "github.event_name != 'pull_request'" not in workflow:
 
 policy = json.loads((ROOT / "policy/quaestor-ledger.json").read_text(encoding="utf-8"))
 repositories = policy.get("repositories", [])
-if policy.get("organization") != "quaestor-ledger" or len(repositories) != 13:
+if policy.get("organization") != "quaestor-ledger" or len(repositories) != 27:
     raise SystemExit("canonical production repository inventory drift")
 if len({item.get("name") for item in repositories}) != len(repositories):
     raise SystemExit("canonical repository names must be unique")
