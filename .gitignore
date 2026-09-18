@@ -13,9 +13,10 @@ tmp/worktrees/
 # <<< ores fleet hygiene <<<
 
 # Repository-local temporary data and authorized Git worktrees
-tmp
-temp
 temp/worktrees
 # Sanctioned scratch locations - AGENTS.md requires both, trailing-slash form
 tmp/
 temp/
+
+# machine-local symlink to ORESoftware/my-ai AGENTS.md; never committed
+.ores/
